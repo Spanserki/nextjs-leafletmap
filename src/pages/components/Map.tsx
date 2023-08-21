@@ -4,8 +4,18 @@ import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 
-var greenIcon = L.icon({
-    iconUrl: '/local.png',
+var yellowIcon = L.icon({
+    iconUrl: '/localDealer.png',
+    shadowUrl: '/shadowcycle.png',
+    iconSize: [42, 42],
+    shadowSize: [16, 16],
+    iconAnchor: [42, 42],
+    shadowAnchor: [29, 7],
+    popupAnchor: [-3, -76]
+});
+
+var blueIcon = L.icon({
+    iconUrl: '/localAuthorized.png',
     shadowUrl: '/shadowcycle.png',
     iconSize: [42, 42],
     shadowSize: [16, 16],
@@ -36,7 +46,7 @@ const Map = ({ defaultLocal, values, zoomMap }: MapProps) => {
                     <Marker
                         key={item.id}
                         position={[item.lat, item.lgt]}
-                        icon={greenIcon}
+                        icon={item.isAuthorized === 'true' ? blueIcon : yellowIcon}
                     >
                         <Popup>
                             {item.name}

@@ -26,12 +26,13 @@ model City {
 }
 
 model Company {
-  id        String  @id @default(uuid())
-  name      String
-  address   String
-  cellphone String
-  lat       Float?
-  lgt       Float?
-  city      City?   @relation(fields: [cityId], references: [id])
-  cityId    String?
+  id           String  @id @default(uuid())
+  name         String
+  address      String
+  cellphone    String
+  lat          Float?
+  lgt          Float?
+  city         City?   @relation(fields: [cityId], references: [id])
+  cityId       String?
+  isAuthorized String?
 }

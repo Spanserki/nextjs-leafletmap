@@ -1,35 +1,52 @@
-import { GetCities, GetUfs } from "@/hooks/server";
+import { GetCities, GetCompaniesFilter, GetUfs } from "@/hooks/server";
 import { api } from "@/lib/api";
-import { Flex, FormControl, FormLabel, Heading, Select, Stack, Text } from "@chakra-ui/react";
+import { queryClient } from "@/lib/queryClient";
+import {
+  Flex,
+  FormControl,
+  FormLabel,
+  Heading,
+  Radio,
+  RadioGroup,
+  Select,
+  Skeleton,
+  Stack,
+  Text,
+  Badge
+} from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import 'leaflet/dist/leaflet.css';
 import dynamic from 'next/dynamic';
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const Map = dynamic(() => import('./components/Map'), { ssr: false })
   const [ufId, setUfId] = useState('')
+  const [cityId, setCityd] = useState('')
   const [zoomMap, setZoomMap] = useState(4)
   const [defaultLocal, setDefaultLocal] = useState({ lat: -9.976787, lgt: -57.465469 })
-  const [companies, setCompanies] = useState<any[]>([])
+  const [isAuthorized, setisAuthorized] = useState('')
   const ufs = GetUfs()
   const cities = GetCities(`${ufId}`)
+  const companiesFilter = GetCompaniesFilter(cityId, isAuthorized)
+
   useEffect(() => {
-    setCompanies([])
-  }, [ufId])
+    queryClient.invalidateQueries(['companiesFilter', cityId, isAuthorized]);
+    companiesFilter.refetch()
+  }, [cityId, isAuthorized])
+
   async function handlerFilterMap(cityId: string) {
+    setCityd(cityId)
     await api.get('/regions/companies', {
       params: {
         cityId
       }
     }).then(res => {
       if (!!res.data.length) {
-        setCompanies(res.data)
         setZoomMap(12)
         setDefaultLocal({ lat: res.data[0].lat, lgt: res.data[0].lgt })
       } else {
         setZoomMap(4)
-        setCompanies([])
         setDefaultLocal({ lat: -9.976787, lgt: -57.465469 })
       }
     })
@@ -38,14 +55,15 @@ export default function Home() {
     <Flex
       w='100%'
       h='100vh'
-      align='center'
       justify='center'
+      align='center'
+      py={4}
     >
       <Stack
         w='100%'
         h='100%'
         maxH={600}
-        maxW='7xl'
+        maxW='8xl'
         direction='row'
         justify='center'
         align='center'
@@ -54,16 +72,29 @@ export default function Home() {
         <Stack
           w='50%'
           h='100%'
-          align='center'
-          justify='flex-start'
-          spacing={8}
+          spacing={4}
           px={4}
         >
-          <Heading fontSize='xl'>
-            Unidades Ilumisol espalhadas no território nacional
+          <Text
+            textTransform='uppercase'
+            fontWeight='bold'
+          >
+            Localizar parceiros
+          </Text>
+          <Heading fontSize='5xl' maxW='sm' color='blue.700'>
+            Onde encontrar a Ilumisol
           </Heading>
+          <Text fontWeight='medium'>
+            Encontre a Ilumisol mais próxima de você!
+          </Text>
+          <Text>
+            A marca referência em energia solar no Brasil está perto de você!
+            Com uma ampla rede de autorizados e revendedores autorizados, a Ilumisol está
+            presente em todas as regiões do país, levando as melhores soluções em energia
+            solar aos mais diferentes tipos de projetos. Preencha o quadro abaixo e descubra a unidade mais próxima:
+          </Text>
           <FormControl>
-            <FormLabel>Procure por região</FormLabel>
+            <FormLabel>Região</FormLabel>
             <Select
               onChange={(e) => setUfId(e.target.value)}
               placeholder="--selecione--"
@@ -76,7 +107,7 @@ export default function Home() {
             </Select>
           </FormControl>
           <FormControl>
-            <FormLabel>Procure por cidade</FormLabel>
+            <FormLabel>Cidade</FormLabel>
             <Select
               onClick={(e: any) => handlerFilterMap(e.target.value)}
               placeholder="--selecione--"
@@ -88,35 +119,16 @@ export default function Home() {
               })}
             </Select>
           </FormControl>
-          {!!companies && companies.map((item: any) => {
-            return (
-              <Stack
-                w='100%'
-                align='flex-start'
-              >
-                <motion.div
-                  className="card"
-                  initial={{ translateX: -10, opacity: 0 }}
-                  animate={{ translateX: 0, opacity: 1 }}
-                  transition={{ duration: 0.7 }}
-                  viewport={{ once: true }}
-                >
-                  <Stack
-                    w='100%'
-                    align='flex-start'
-                    fontSize='sm'
-                    bgColor='gray.50'
-                    p={2}
-                    rounded='md'
-                  >
-                    <Text fontWeight='bold'>{item.name}</Text>
-                    <Text>{item.address}</Text>
-                    <Text>{item.cellphone}</Text>
-                  </Stack>
-                </motion.div>
+          <Stack spacing={4}>
+            <Text fontWeight='medium'>Mostrar apenas</Text>
+            <RadioGroup onChange={setisAuthorized} value={isAuthorized}>
+              <Stack direction='row'>
+                <Radio value=''>Todos</Radio>
+                <Radio value='true'>Autorizado Ilumisol</Radio>
+                <Radio value='false'>Revendedor autorizado</Radio>
               </Stack>
-            )
-          })}
+            </RadioGroup>
+          </Stack>
         </Stack>
         <Flex
           w='50%'
@@ -124,8 +136,44 @@ export default function Home() {
           rounded='md'
           overflow='hidden'
         >
-          <Map values={companies} defaultLocal={defaultLocal} zoomMap={zoomMap} />
+          {!!companiesFilter.isLoading ? (
+            <Skeleton w='100%' h='100%' />
+          ) : (
+            <Map values={companiesFilter.data} defaultLocal={defaultLocal} zoomMap={zoomMap} />
+          )}
         </Flex>
+        <Stack h='100%' w='30%'>
+          {!!companiesFilter.data && companiesFilter.data.map((item: any) => {
+            return (
+              <motion.div
+                className="card"
+                initial={{ translateX: 10, opacity: 0 }}
+                animate={{ translateX: 0, opacity: 1 }}
+                transition={{ duration: 0.7 }}
+                viewport={{ once: true }}
+              >
+                <Stack
+                  w='100%'
+                  align='flex-start'
+                  fontSize='sm'
+                  bgColor='gray.50'
+                  p={2}
+                  rounded='md'
+                  borderRightWidth={2}
+                  borderRightColor={item.isAuthorized === 'true' ? 'blue.400' : 'yellow.400'}
+                >
+                  <Text fontSize='xs'>
+                    {item.isAuthorized === 'true' ? 'Autorizado Ilumisol' : 'Revendedor autorizado'}
+                  </Text>
+                  <Text fontWeight='bold'>{item.name}</Text>
+                  <Text>{item.address}</Text>
+                  <Text>{item.cellphone}</Text>
+                </Stack>
+              </motion.div>
+            )
+          })}
+        </Stack>
+
       </Stack>
     </Flex>
   )

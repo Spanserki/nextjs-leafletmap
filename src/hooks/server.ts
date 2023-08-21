@@ -43,3 +43,23 @@ export function GetCompanies(cityId: string) {
         )
     )
 }
+
+export function GetCompaniesFilter(
+    cityId: string,
+    isAuthorized: string,
+) {
+    return (
+        useQuery(
+            ['companiesFilter', cityId, isAuthorized],
+            async () => {
+                const response = await api.get('/regions/companiesFilter', {
+                    params: {
+                        cityId,
+                        isAuthorized
+                    }
+                })
+                return response.data
+            }
+        )
+    )
+}
