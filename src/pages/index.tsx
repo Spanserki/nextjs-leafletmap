@@ -1,6 +1,3 @@
-import { GetCities, GetCompaniesFilter, GetUfs } from "@/hooks/server";
-import { api } from "@/lib/api";
-import { queryClient } from "@/lib/queryClient";
 import {
   Flex,
   FormControl,
@@ -12,12 +9,16 @@ import {
   Skeleton,
   Stack,
   Text,
-  Badge
+  Badge,
+  useBreakpointValue
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import 'leaflet/dist/leaflet.css';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from "react";
+import { api } from "../lib/api";
+import { queryClient } from "../lib/queryClient";
+import { GetCities, GetCompaniesFilter, GetUfs } from "@/hooks/server";
 
 export default function Home() {
   const Map = dynamic(() => import('./components/Map'), { ssr: false })
@@ -34,7 +35,9 @@ export default function Home() {
     queryClient.invalidateQueries(['companiesFilter', cityId, isAuthorized]);
     companiesFilter.refetch()
   }, [cityId, isAuthorized])
-
+  useEffect(() => {
+    setisAuthorized('')
+  }, [cityId])
   async function handlerFilterMap(cityId: string) {
     setCityd(cityId)
     await api.get('/regions/companies', {
@@ -58,22 +61,21 @@ export default function Home() {
       justify='center'
       align='center'
       py={4}
+      bgColor='white'
     >
       <Stack
         w='100%'
         h='100%'
-        maxH={600}
+        maxH='600'
+        direction={{ base: 'column', lg: 'row' }}
         maxW='8xl'
-        direction='row'
         justify='center'
         align='center'
         px={6}
       >
         <Stack
-          w='50%'
-          h='100%'
+          w={{ base: '100%', lg: '50%' }}
           spacing={4}
-          px={4}
         >
           <Text
             textTransform='uppercase'
@@ -131,8 +133,8 @@ export default function Home() {
           </Stack>
         </Stack>
         <Flex
-          w='50%'
-          h='100%'
+          w={{ base: '100%', lg: '50%' }}
+          h={{ base: '300px', lg: '600px' }}
           rounded='md'
           overflow='hidden'
         >
@@ -142,7 +144,11 @@ export default function Home() {
             <Map values={companiesFilter.data} defaultLocal={defaultLocal} zoomMap={zoomMap} />
           )}
         </Flex>
-        <Stack h='100%' w='30%'>
+        <Stack
+          h='100%'
+          w={{ base: '100%', lg: '30%' }}
+          display={companiesFilter.data?.length > 0 ? 'block' : 'none'}
+        >
           {!!companiesFilter.data && companiesFilter.data.map((item: any) => {
             return (
               <motion.div
@@ -158,6 +164,7 @@ export default function Home() {
                   fontSize='sm'
                   bgColor='gray.50'
                   p={2}
+                  mb={2}
                   rounded='md'
                   borderRightWidth={2}
                   borderRightColor={item.isAuthorized === 'true' ? 'blue.400' : 'yellow.400'}
@@ -173,7 +180,6 @@ export default function Home() {
             )
           })}
         </Stack>
-
       </Stack>
     </Flex>
   )
