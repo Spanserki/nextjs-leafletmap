@@ -61,7 +61,8 @@ export default function Home() {
       justify='center'
       align='center'
       py={4}
-      bgColor='white'
+      bgColor='blackAlpha.800'
+      color='whiteAlpha.800'
     >
       <Stack
         w='100%'
@@ -81,17 +82,17 @@ export default function Home() {
             textTransform='uppercase'
             fontWeight='bold'
           >
-            Localizar parceiros
+            Localizar Energy Bank
           </Text>
-          <Heading fontSize='5xl' maxW='sm' color='blue.700'>
-            Onde encontrar a Ilumisol
+          <Heading fontSize='5xl' maxW='sm' color='cyan.400'>
+            Onde encontrar postos de recarregamento
           </Heading>
           <Text fontWeight='medium'>
-            Encontre a Ilumisol mais próxima de você!
+            Encontre a Energy Bank mais próxima de você!
           </Text>
           <Text>
-            A marca referência em energia solar no Brasil está perto de você!
-            Com uma ampla rede de autorizados e revendedores autorizados, a Ilumisol está
+            A marca referência em postos de recarregamentos no Brasil está perto de você!
+            Com uma ampla rede de postos e bases autorizadas, a Energy Bank está
             presente em todas as regiões do país, levando as melhores soluções em energia
             solar aos mais diferentes tipos de projetos. Preencha o quadro abaixo e descubra a unidade mais próxima:
           </Text>
@@ -100,10 +101,18 @@ export default function Home() {
             <Select
               onChange={(e) => setUfId(e.target.value)}
               placeholder="--selecione--"
+              color='#737373'
+              borderColor='whiteAlpha.300'
             >
               {!!ufs.data && ufs.data.map((item: any) => {
                 return (
-                  <option key={item.id} value={`${item.id}`}>{item.name}</option>
+                  <option
+                    key={item.id}
+                    value={`${item.id}`}
+                    style={{ color: 'black' }}
+                  >
+                    {item.name}
+                  </option>
                 )
               })}
             </Select>
@@ -113,10 +122,18 @@ export default function Home() {
             <Select
               onClick={(e: any) => handlerFilterMap(e.target.value)}
               placeholder="--selecione--"
+              color='#737373'
+              borderColor='whiteAlpha.300'
             >
               {!!cities.data && cities.data.map((item: any) => {
                 return (
-                  <option key={item.id} value={`${item.id}`}>{item.name}</option>
+                  <option
+                    key={item.id}
+                    value={`${item.id}`}
+                    style={{ color: 'black' }}
+                  >
+                    {item.name}
+                  </option>
                 )
               })}
             </Select>
@@ -162,7 +179,7 @@ export default function Home() {
                   w='100%'
                   align='flex-start'
                   fontSize='sm'
-                  bgColor='gray.50'
+                  bgColor='blackAlpha.300'
                   p={2}
                   mb={2}
                   rounded='md'
@@ -170,7 +187,7 @@ export default function Home() {
                   borderRightColor={item.isAuthorized === 'true' ? 'blue.400' : 'yellow.400'}
                 >
                   <Text fontSize='xs'>
-                    {item.isAuthorized === 'true' ? 'Autorizado Ilumisol' : 'Revendedor autorizado'}
+                    {item.isAuthorized === 'true' ? 'Base autorizada' : 'Posto de controle'}
                   </Text>
                   <Text fontWeight='bold'>{item.name}</Text>
                   <Text>{item.address}</Text>
